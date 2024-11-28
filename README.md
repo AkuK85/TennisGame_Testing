@@ -37,3 +37,102 @@ original design systems. This is achieved by updating the .classpath and .projec
 dependencies and configurations. This should ensure that the project can be imported into Eclipse IDE and run with
 Eclemma plugin without any issues.
 
+## **First Round of Testing**
+
+First round of testing with JaCoCo was successful. The tests were run using Maven and the code coverage report can be
+found below.
+
+![Code Coverage Report](/images/CodeCoverageR1.png)
+
+### Coverage Rates
+
+### Coverage Rate by Lines
+
+- Coverage Rate: 74%
+- Covered Lines: 29
+- Missed Lines: 10
+- Total Lines: 39
+
+### Coverage Rate by Branches
+
+- Coverage Rate: 54%
+- Covered Branches: 18
+- Missed Branches: 15
+- Total Branches: 33
+
+### Coverage Rate of Methods
+
+- Coverage Rate: 100%
+- Covered Methods: 7
+- Missed Methods: 0
+- Total Methods: 7
+
+## **First implementation of new tests**
+
+First i decdided to implement unit tests that check the fucntionality when player 1 wins and player 2 wins. These tests
+are implemented in TennisGameTest.java file.
+
+1. Test for Player 1 winning the game.
+
+```java
+@Test
+	public void testTennisGame_Player1WinsGame() throws TennisGameException {
+		// Arrange
+		TennisGame game = new TennisGame();
+		//Act
+		game.player1Scored();
+		game.player1Scored();
+		game.player1Scored();
+		game.player1Scored();
+		// Assert
+		assertEquals("Player 1 win score incorrect", "player1 wins", game.getScore());
+	}
+```
+
+2. Test for Player 2 winning the game.
+
+```java
+@Test
+	public void testTennisGame_Player2WinsGame() throws TennisGameException {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Act
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		// Asseert
+		assertEquals("Player 2 in score incorrect", "player2 wins", game.getScore());
+	}
+```
+
+### **Second round of testing**
+
+After implementing the 2 new test to TennisGameTest.java class i ran JaCoCo ith Maven again and got some improvement 
+with the code coverage, it jumped form original total of 74% to 82%. Coverage report image is linked below.
+
+![Code Coverage Report](/images/CodeCoverageR2.png)
+
+### Coverage Rates
+
+### Coverage Rate by Lines
+
+- Coverage Rate: 82%
+- Covered Lines: 34
+- Missed Lines: 6
+- Total Lines: 40
+
+### Coverage Rate by Branches
+
+- Coverage Rate: 66%
+- Covered Branches: 22
+- Missed Branches: 11
+- Total Branches: 33
+
+### Coverage Rate of Methods
+
+- Coverage Rate: 100%
+- Covered Methods: 7
+- Missed Methods: 0
+- Total Methods: 7
+
