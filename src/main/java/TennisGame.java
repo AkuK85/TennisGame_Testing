@@ -2,6 +2,21 @@
 // NOTE THAT it may contain bugs
 // Write unit tests in TennisGameTest.java and try to find the errors in the code
 
+// Here is the format of the scores:
+// "love - love"
+// "15 - 15"
+// "30 - 30"
+// "deuce"
+// "15 - love", "love - 15"
+// "30 - love", "love - 30"
+// "40 - love", "love - 40"
+// "30 - 15", "15 - 30"
+// "40 - 15", "15 - 40"
+// "player1 has advantage"
+// "player2 has advantage"
+// "player1 wins"
+// "player2 wins"
+
 public class TennisGame {
 	private int player1Points;
 	private int player2Points;
@@ -15,10 +30,12 @@ public class TennisGame {
 	}
 	
 	private void checkGameEnded() {
-		if (player1Points>=4 && player1Points-player2Points>=2)
+		if (player1Points >= 4 && player1Points - player2Points >= 2) {
 			gameEnded = true;
-		else if (player2Points>=4 && player2Points-player1Points>=2)
+		}
+		else if (player2Points >= 4 && player2Points - player1Points >= 2) {
 			gameEnded = true;
+		}
 	}
 	
 	private String getScore(int points) {
@@ -52,40 +69,28 @@ public class TennisGame {
 	}
 	
 	public String getScore() {
-// Here is the format of the scores:
-// "love - love"
-// "15 - 15"
-// "30 - 30"
-// "deuce"
-// "15 - love", "love - 15"
-// "30 - love", "love - 30"
-// "40 - love", "love - 40"
-// "30 - 15", "15 - 30"
-// "40 - 15", "15 - 40"
-// "player1 has advantage"
-// "player2 has advantage"
-// "player1 wins"
-// "player2 wins"
-		
-			String player1Score = getScore(player1Points);
-			String player2Score = getScore(player2Points);
-			
+
+		String player1Score = getScore(player1Points);
+		String player2Score = getScore(player2Points);
+
 			if (gameEnded) {
-				if (player1Points > player2Points)
+				if (player1Points > player2Points) {
 					return "player1 wins";
-				else
+				}
+				else {
 					return "player2 wins";
+				}
 			}
-			
-			if (player1Points >= 4 && player1Points == player2Points)
-				return "deuce";
-			
-			if (player1Points >= 4 && player1Points - player2Points == 1)
-				return "player1 has advantage";
-			
-			if (player2Points > 4 && player2Points - player1Points == 1)
-				return "player2 has advantage";							
-			
-			return  player2Score + " - " + player1Score ;
+			if (player1Points >= 3 && player2Points >= 3 && player1Points == player2Points) {
+					return "deuce";
+				}
+			if (player1Points >= 3 && player1Points - player2Points == 1) {
+					return "player1 has advantage";
+			}
+			if (player2Points >= 3 && player2Points - player1Points == 1) {
+					return "player2 has advantage";
+			}
+
+			return  player1Score + " - " + player2Score ;
 	}
 }

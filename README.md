@@ -44,7 +44,7 @@ found below.
 
 ![Code Coverage Report](/images/CodeCoverageR1.png)
 
-### Coverage Rates
+### **Coverage Rates**
 
 ### Coverage Rate by Lines
 
@@ -109,11 +109,11 @@ are implemented in TennisGameTest.java file.
 ### **Second round of testing**
 
 After implementing the 2 new test to TennisGameTest.java class i ran JaCoCo ith Maven again and got some improvement 
-with the code coverage, it jumped form original total of 74% to 82%. Coverage report image is linked below.
+with the code coverage. Coverage report image is linked below.
 
 ![Code Coverage Report](/images/CodeCoverageR2.png)
 
-### Coverage Rates
+### **Coverage Rates**
 
 ### Coverage Rate by Lines
 
@@ -127,6 +127,233 @@ with the code coverage, it jumped form original total of 74% to 82%. Coverage re
 - Coverage Rate: 66%
 - Covered Branches: 22
 - Missed Branches: 11
+- Total Branches: 33
+
+### Coverage Rate of Methods
+
+- Coverage Rate: 100%
+- Covered Methods: 7
+- Missed Methods: 0
+- Total Methods: 7
+
+### **Second implementation of new tests**
+
+Next step was to implement tests to check the functionality when either player 1 or player 2 has advantage. These tests
+are implemented in TennisGameTest.java file.
+
+1. Test for Player 1 having advantage.
+
+```java
+@Test
+	public void testTennisGame_Player1HasAdvantage() throws TennisGameException  {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Act
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player1Scored();
+		game.player1Scored();
+		game.player1Scored();
+		game.player1Scored();
+		// Assert
+		assertEquals("Advantage for Player1 score incorrect", "player1 has advantage", game.getScore());
+	}
+```
+
+2. Test for Player 2 having advantage.
+
+```java
+@Test
+	public void testTennisGame_Player2HasAdvantage() throws TennisGameException {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Act
+		game.player1Scored();
+		game.player1Scored();
+		game.player1Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		// Assert
+		assertEquals("Advantage for Player2 score incorrect", "player2 has advantage", game.getScore());
+	}
+```
+
+First test passed successfully but the second test failed. After reading the error message it was clear that the
+implementation of the game logic was incorrect. By checking the code in TennisGame.java file i found a bug in the
+implementation getScore method for checking if player 2 has an advantage. 
+
+Original implementation in TennisGame.java file at line 86:
+
+```java
+if (player2Points > 4 && player2Points - player1Points == 1)
+    return "player2 has advantage";
+```
+
+Corrected implementation is:
+
+```java
+if (player2Points >= 4 && player2Points - player1Points == 1)
+    return "player2 has advantage";
+```
+
+The condition should be player2Points >= 4 insted of player2Points > 4. This caused the test to fail because the condition
+was never met. After fixing the bug the test passed successfully.
+
+### **Third round of testing**
+
+After fixing the bug in the implementation of the game logic, i ran JaCoCo with Maven again and got some improvement with
+the code coverage, report image can be seen below.
+
+![Code Coverage Report](/images/CodeCoverageR3.png)
+
+### **Coverage Rates**
+
+### Coverage Rate by Lines
+
+- Coverage Rate: 94%
+- Covered Lines: 37
+- Missed Lines: 3
+- Total Lines: 40
+
+### Coverage Rate by Branches
+
+- Coverage Rate: 84%
+- Covered Branches: 28
+- Missed Branches: 5
+- Total Branches: 33
+
+### Coverage Rate of Methods
+
+- Coverage Rate: 100%
+- Covered Methods: 7
+- Missed Methods: 0
+- Total Methods: 7
+
+### **Third implementation of new tests**
+
+After implementing all the recommended tests in course material and not achieving 100% coverage with those(As expected).
+Third round of writing new tests and aiming to 100% code coverage,  I had to comb through the code coverage report 
+bit more carefully. While going through the report i noticed that there were some parts of code that were not covered by
+the tests. 
+
+After adding new tests and trying to analyze missing coverage, I ended up to implement tests to check the game logic at
+all possible game states. These tests are implemented in TennisGameTest.java file. While going trough the code coverage
+reports after implementing test to cover all the different possible scores and game states, I noticed some problems with 
+SUT code, and when I made tests to cover the situation when one player has an advantage, I missed detail in SUT code
+that caused the test to fail. When checking getScore method in TennisGame.java file, I noticed that the logic in the
+method was incorrect. There was also a bug at returning player scores in the method that i found after implementing 
+tests to cover all possible game states. In the comments at the TennisGameTest class its mentioned that score should 
+be presented in format "player1 - player2" but the original implementation was returning it in format "player2 - player1".
+
+Original implementation:
+```java
+public String getScore() {
+// Here is the format of the scores:
+// "love - love"
+// "15 - 15"
+// "30 - 30"
+// "deuce"
+// "15 - love", "love - 15"
+// "30 - love", "love - 30"
+// "40 - love", "love - 40"
+// "30 - 15", "15 - 30"
+// "40 - 15", "15 - 40"
+// "player1 has advantage"
+// "player2 has advantage"
+// "player1 wins"
+// "player2 wins"
+
+    String player1Score = getScore(player1Points);
+    String player2Score = getScore(player2Points);
+
+    if (gameEnded) {
+        if (player1Points > player2Points)
+            return "player1 wins";
+        else
+            return "player2 wins";
+    }
+
+    if (player1Points >= 4 && player1Points == player2Points)
+        return "deuce";
+
+    if (player1Points >= 4 && player1Points - player2Points == 1)
+        return "player1 has advantage";
+
+    if (player2Points >= 4 && player2Points - player1Points == 1)
+        return "player2 has advantage";
+
+    return  player2Score + " - " + player1Score ;
+}
+```
+
+Corrected implementation is:
+
+```java
+public String getScore() {
+
+    String player1Score = getScore(player1Points);
+    String player2Score = getScore(player2Points);
+
+    if (gameEnded) {
+        if (player1Points > player2Points) {
+            return "player1 wins";
+        }
+        else {
+            return "player2 wins";
+        }
+    }
+    if (player1Points >= 3 && player2Points >= 3 && player1Points == player2Points) {
+        return "deuce";
+    }
+    if (player1Points >= 3 && player1Points - player2Points == 1) {
+        return "player1 has advantage";
+    }
+    if (player2Points >= 3 && player2Points - player1Points == 1) {
+        return "player2 has advantage";
+    }
+
+    return  player1Score + " - " + player2Score ;
+}
+```
+
+First of all for some clarity i decided to move the comments from the method to the class level. This makes the code
+cleaner and easier to read. I also added some missing brackets to the if statements to make the code more readable and
+less error-prone. I also changed the condition for checking if the game is in deuce state. The original implementation
+was checking if the player points were equal to 4, but it should be checking if the player points are equal to 3 or greater
+and both players have the same points. I also changed the condition for checking if a player has an advantage. The original
+implementation was checking if the player points were equal or greater to 4 and the difference between the player points
+was 1, but it should be checking if the player points are equal or greater to 3 and the difference between the player
+points is 1. Lastly, I changed the return statement to return the player scores in the correct order.
+
+
+### **Fourth round of testing**
+
+I decided not to add all the tests i did to cover all possible game states to this README file, because it would make it
+too long and bloated. I also decided to leave out the code coverage reports while figuring out the small percentage of
+missing coverage in implementation of last tests. There was quite a lot of trial and error in last part and documenting
+every step would be way too timid for this project. I did manage finally push the coverage percentage to 100% and it 
+would not be possible without changing the SUT code, since it had some critical bugs when handling the scoring and game
+states.
+
+![Code Coverage Report](/images/CodeCoverageR3.png)
+
+### **Coverage Rates**
+
+### Coverage Rate by Lines
+
+- Coverage Rate: 100%
+- Covered Lines: 40
+- Missed Lines: 0
+- Total Lines: 40
+
+### Coverage Rate by Branches
+
+- Coverage Rate: 100%
+- Covered Branches: 33
+- Missed Branches: 0
 - Total Branches: 33
 
 ### Coverage Rate of Methods
