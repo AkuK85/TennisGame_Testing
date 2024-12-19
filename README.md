@@ -363,3 +363,121 @@ states.
 - Missed Methods: 0
 - Total Methods: 7
 
+## ** Mutation Testing **
+
+One part of the given tasks was to run mutation testing with PITest and see how many mutants survived the tests. After 
+running the PITest task is to kill the mutants by writing new tests. I ran the PITest with Maven and got the following
+results.
+
+![PITest Report 1](/images/PITestR1.png)
+
+![PITest survived mutants](/images/PITestR1Mutations.png)
+
+### Line Coverage: 100% (39/39)
+### Mutation Coverage: 81% (35/43)
+### Test Strength: 81 (35/43)
+
+__Survived Mutations__
+
+1. Line 33: Changed conditional boundary.
+2. Line 36: Changed conditional boundary.
+3. Line 47: Replaced return value with "" for TennisGame::getScore.
+4. Line 77: Changed conditional boundary.
+5. Line 84: 2 X Changed conditional boundary.
+6. Line 87: Changed conditional boundary.
+7. Line 90: Changed conditional boundary.
+
+__Conclusion__
+
+Mutation test result indicate that while majority of the mutants were killed by the existing test cases, still there 
+were multiple mutants that survived the tests. Survived mutants highlight areas where the test coverage could be 
+improved. When going trough the surviving mutants, reviewing tests and SUT code, its quite evident that altered 
+conditional boundaries caused most of the surviving mutants. Additionally, there was a single mutant surviving that was 
+caused by return value being empty string. By addressing these gaps in the test coverage, it should be possible to kill 
+the surviving mutants and improve the robustness of the tests.
+
+### ** Additional tests **
+
+Since there was quite a lot of surviving mutants, I´ll go through every case one by one, with explanation why mutants 
+survived and solution to kill them.
+
+1. __Line 33: Changed conditional boundary__
+
+__Explanation:__ The mutation changed the conditional boundary in the if statement. The original condition was checking 
+if the player1 points were equal or greater to 4 and that player point difference was equal or greater to 2. The mutant
+likely altered the condition to something like player1Points >= 4 && player1Points - player2Points > 2. This caused the
+mutant to survive because the original test cases did not cover the specific boundary condition where difference between
+player points is exactly 2.
+
+__Solution:__ I wrote a new test that specifically checks this boundary condition. Test can be seen below.
+
+```java
+@Test
+	public void testTennisGame_Player1WinsAtBoundary() throws TennisGameException {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Act
+		game.player1Scored();
+		game.player1Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player1Scored();
+		game.player1Scored();
+		// Assert
+		assertEquals("Player 1 win score incorrect", "player1 wins", game.getScore());
+	}
+```
+
+2. __Line 36: Changed conditional boundary__
+
+__Explanation:__ The mutation with this case is similar to the previous one, except for the player2 winning this time.
+
+__Solution:__ I wrote a new test similar to last one. Test can be seen below.
+
+```java
+@Test
+	public void testTennisGame_Player2WinsAtBoundary() throws TennisGameException {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Act
+		game.player1Scored();
+		game.player1Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		// Assert
+		assertEquals("Player 2 win score incorrect", "player2 wins", game.getScore());
+	}
+```
+
+3. __Line 47: Replaced return value with "" for TennisGame::getScore__
+
+__Explanation:__ The mutation replaced the return value set as default in switch statement with empty string instead of
+"40", this caused the mutant to survive because the original test cases did not cover the specific condition where the
+return value for getScore method is called with value over 3. This was completely missed in the original test cases since
+i was thinking too much in the context of tennis scoring system. This caused me to miss the possibility of this kind of
+mutation.
+
+__Solution:__ I wrote a new test to cover this specific case. Instead of an approach where i would have let the game go 
+to deuce state and then check the return value, i decided to go with a more direct approach and call the getScore method
+with player points set to 4 which should return "40". With this I ran in to a problem that the getScore method is set to
+private and i can´t call it directly from the test class. Luckily I had already bumped in to this problem earlier in
+another task and remembered that i can use reflection to call private methods. I implemented the test with reflection
+and it worked as expected. Test can be seen below.
+
+```java
+@Test
+	public void testTennisGame_InvalidDefaultScore() throws Exception {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Use reflection to access the private getScore method
+		Method getScoreMethod = TennisGame.class.getDeclaredMethod("getScore", int.class);
+		getScoreMethod.setAccessible(true);
+		// Act
+		String score = (String) getScoreMethod.invoke(game, 4); // Invalid score
+		// Assert
+		assertEquals("Invalid score incorrect", "40", score);
+	}
+```
+

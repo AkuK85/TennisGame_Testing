@@ -1,7 +1,28 @@
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 public class TennisGameTest {
+
+	private int getPlayer1Points(TennisGame game) throws Exception {
+		Field field = TennisGame.class.getDeclaredField("player1Points");
+		field.setAccessible(true);
+		return field.getInt(game);
+	}
+
+	private int getPlayer2Points(TennisGame game) throws Exception {
+		Field field = TennisGame.class.getDeclaredField("player2Points");
+		field.setAccessible(true);
+		return field.getInt(game);
+	}
+
+	private boolean isGameEnded(TennisGame game) throws Exception {
+		Field field = TennisGame.class.getDeclaredField("gameEnded");
+		field.setAccessible(true);
+		return field.getBoolean(game);
+	}
 
 	/*
 	 Here is the format of the scores: "player1Score - player2Score"
@@ -49,7 +70,7 @@ public class TennisGameTest {
 	}
 
 	@Test
-	public void testTennisGame_Start() {
+	public void testTennisGame_Start() throws TennisGameException {
 		//Arrange
 		TennisGame game = new TennisGame();
 		//Act
@@ -312,6 +333,80 @@ public class TennisGameTest {
 		String score = game.getScore();
 		// Assert
 		assertEquals("Player 2 win score incorrect", "player2 wins", score);
+	}
+
+	// Tests below this line are added after the mutation testing was done first time.
+
+	@Test
+	public void testTennisGame_Player1WinsAtBoundary() throws TennisGameException {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Act
+		game.player1Scored();
+		game.player1Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player1Scored();
+		game.player1Scored();
+		// Assert
+		assertEquals("Player 1 win score incorrect", "player1 wins", game.getScore());
+	}
+
+
+	@Test
+	public void testTennisGame_Player2WinsAtBoundary() throws TennisGameException {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Act
+		game.player1Scored();
+		game.player1Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		// Assert
+		assertEquals("Player 2 win score incorrect", "player2 wins", game.getScore());
+	}
+
+	@Test
+	public void testTennisGame_InvalidDefaultScore() throws Exception {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Use reflection to access the private getScore method
+		Method getScoreMethod = TennisGame.class.getDeclaredMethod("getScore", int.class);
+		getScoreMethod.setAccessible(true);
+		// Act
+		String score = (String) getScoreMethod.invoke(game, 4); // Invalid score
+		// Assert
+		assertEquals("Invalid score incorrect", "40", score);
+	}
+
+	@Test
+	public void testTennisGame_DeuceAtBoundary() throws TennisGameException {
+		// Arrange
+		TennisGame game = new TennisGame();
+		// Act
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		// Assert
+		assertEquals("Deuce score incorrect", "deuce", game.getScore());
+	}
+
+	@Test(expected = TennisGameException.class)
+	public void testTennisGame_InvalidScore_ThrowsExceptionPlayer1() throws Exception {
+		TennisGame game = new TennisGame();
+
+		// Use reflection to modify score directly
+		Field field = TennisGame.class.getDeclaredField("player1Points");
+		field.setAccessible(true);
+		field.set(game, -1); // Set an invalid negative score
+
+		// Attempt to get the score
+		game.getScore();
 	}
 
 }

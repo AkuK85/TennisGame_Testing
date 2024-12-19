@@ -38,7 +38,10 @@ public class TennisGame {
 		}
 	}
 	
-	private String getScore(int points) {
+	private String getScore(int points) throws TennisGameException {
+		if (points < 0) {
+			throw new TennisGameException();
+		}
 		switch (points)	{
 		case 0: return "love";
 		case 1: return "15" ;
@@ -68,7 +71,7 @@ public class TennisGame {
 		}			
 	}
 	
-	public String getScore() {
+	public String getScore() throws TennisGameException {
 
 		String player1Score = getScore(player1Points);
 		String player2Score = getScore(player2Points);
