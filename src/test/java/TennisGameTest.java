@@ -6,40 +6,6 @@ import java.lang.reflect.Method;
 
 public class TennisGameTest {
 
-	private int getPlayer1Points(TennisGame game) throws Exception {
-		Field field = TennisGame.class.getDeclaredField("player1Points");
-		field.setAccessible(true);
-		return field.getInt(game);
-	}
-
-	private int getPlayer2Points(TennisGame game) throws Exception {
-		Field field = TennisGame.class.getDeclaredField("player2Points");
-		field.setAccessible(true);
-		return field.getInt(game);
-	}
-
-	private boolean isGameEnded(TennisGame game) throws Exception {
-		Field field = TennisGame.class.getDeclaredField("gameEnded");
-		field.setAccessible(true);
-		return field.getBoolean(game);
-	}
-
-	/*
-	 Here is the format of the scores: "player1Score - player2Score"
-	 "love - love"
-	 "15 - 15"
-	 "30 - 30"
-	 "deuce"
-	 "15 - love", "love - 15"
-	 "30 - love", "love - 30"
-	 "40 - love", "love - 40"
-	 "30 - 15", "15 - 30"
-	 "40 - 15", "15 - 40"
-	 "player1 has advantage"
-	 "player2 has advantage"
-	 "player1 wins"
-	 "player2 wins"
-	*/
 
 	@Test(expected = TennisGameException.class)
 	public void testTennisGame_Player1WinsPointAfterGameEnded_ResultsException() throws TennisGameException {
@@ -409,4 +375,233 @@ public class TennisGameTest {
 		game.getScore();
 	}
 
+	@Test
+	public void testPlayer1WinsWithExactPoints() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player1Scored(); // 4
+		assertEquals("player1 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer2WinsWithExactPoints() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player2Scored(); // 4
+		assertEquals("player2 wins", game.getScore());
+	}
+
+
+
+	@Test
+	public void testPlayer1HasAdvantageExactPoints() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored();
+		game.player1Scored();
+		game.player1Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player1Scored();
+		assertEquals("player1 has advantage, score incorrect", "player1 has advantage", game.getScore());
+	}
+
+	@Test
+	public void testPlayer2HasAdvantageExactPoints() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored();
+		game.player1Scored();
+		game.player1Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		game.player2Scored();
+		assertEquals("player2 has advantage score incorrect", "player2 has advantage", game.getScore());
+	}
+
+	@Test
+	public void testPlayer1WinsAfterAdvantage() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player1Scored(); // 4 (Advantage)
+		game.player1Scored(); // 5 (Wins)
+		assertEquals("player1 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer2WinsAfterAdvantage() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 4 (Advantage)
+		game.player2Scored(); // 5 (Wins)
+		assertEquals("player2 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer1LosesAdvantage() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player1Scored(); // 4 (Advantage)
+		game.player2Scored(); // 4 (Deuce)
+		assertEquals("deuce", game.getScore());
+	}
+
+	@Test
+	public void testPlayer2LosesAdvantage() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 4 (Advantage)
+		game.player1Scored(); // 4 (Deuce)
+		assertEquals("deuce", game.getScore());
+	}
+
+	@Test
+	public void testPlayer1WinsAfterDeuce() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player1Scored(); // 4 (Advantage)
+		game.player2Scored(); // 4 (Deuce)
+		game.player1Scored(); // 5 (Advantage)
+		game.player1Scored(); // 6 (Wins)
+		assertEquals("player1 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer2WinsAfterDeuce() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 4 (Advantage)
+		game.player1Scored(); // 4 (Deuce)
+		game.player2Scored(); // 5 (Advantage)
+		game.player2Scored(); // 6 (Wins)
+		assertEquals("player2 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer1WinsAfterAdvantageAndDeuceTransitions() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player1Scored(); // 4 (Advantage)
+		game.player2Scored(); // 4 (Deuce)
+		game.player1Scored(); // 5 (Advantage)
+		game.player2Scored(); // 5 (Deuce)
+		game.player1Scored(); // 6 (Advantage)
+		game.player1Scored(); // 7 (Wins)
+		assertEquals("player1 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer2WinsAfterAdvantageAndDeuceTransitions() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player2Scored(); // 1
+		game.player2Scored(); // 2
+		game.player2Scored(); // 3
+		game.player1Scored(); // 1
+		game.player1Scored(); // 2
+		game.player1Scored(); // 3
+		game.player2Scored(); // 4 (Advantage)
+		game.player1Scored(); // 4 (Deuce)
+		game.player2Scored(); // 5 (Advantage)
+		game.player1Scored(); // 5 (Deuce)
+		game.player2Scored(); // 6 (Advantage)
+		game.player2Scored(); // 7 (Wins)
+		assertEquals("player2 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer1WinsByTwo() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored(); // 1-0
+		game.player1Scored(); // 2-0
+		game.player1Scored(); // 3-0
+		game.player2Scored(); // 3-1
+		game.player1Scored(); // 4-1 Player 1 wins
+		assertEquals("player1 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer2WinsByTwo() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player2Scored(); // 0-1
+		game.player2Scored(); // 0-2
+		game.player2Scored(); // 0-3
+		game.player1Scored(); // 1-3
+		game.player2Scored(); // 1-4 Player 2 wins
+		assertEquals("player2 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer1WinsByTwoAfterMorePoints() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player1Scored();//1-0
+		game.player2Scored();//1-1
+		game.player1Scored();//2-1
+		game.player2Scored();//2-2
+		game.player1Scored();//3-2
+		game.player2Scored();//3-3
+		game.player1Scored();//4-3
+		game.player1Scored();//5-3 Player 1 wins
+		assertEquals("player1 wins", game.getScore());
+	}
+
+	@Test
+	public void testPlayer2WinsByTwoAfterMorePoints() throws TennisGameException {
+		TennisGame game = new TennisGame();
+		game.player2Scored();//0-1
+		game.player1Scored();//1-1
+		game.player2Scored();//1-2
+		game.player1Scored();//2-2
+		game.player2Scored();//2-3
+		game.player1Scored();//3-3
+		game.player2Scored();//3-4
+		game.player2Scored();//3-5 Player 2 wins
+		assertEquals("player2 wins", game.getScore());
+	}
+
+
 }
+
+

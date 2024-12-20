@@ -29,13 +29,16 @@ public class TennisGame {
 		gameEnded = false ;
 	}
 	
-	private void checkGameEnded() {
+	private String checkGameEnded() {
 		if (player1Points >= 4 && player1Points - player2Points >= 2) {
 			gameEnded = true;
+			return "player1 wins"; // Return win status directly
 		}
 		else if (player2Points >= 4 && player2Points - player1Points >= 2) {
 			gameEnded = true;
+			return "player2 wins"; // Return win status directly
 		}
+		return null; // No winner yet
 	}
 	
 	private String getScore(int points) throws TennisGameException {
@@ -73,27 +76,23 @@ public class TennisGame {
 	
 	public String getScore() throws TennisGameException {
 
-		String player1Score = getScore(player1Points);
-		String player2Score = getScore(player2Points);
+		String gameResult = checkGameEnded(); // Call checkGameEnded() and store result
 
-			if (gameEnded) {
-				if (player1Points > player2Points) {
-					return "player1 wins";
-				}
-				else {
-					return "player2 wins";
-				}
+		if (gameResult != null) {
+			return gameResult; // Return win status directly
+		}
+		if (player1Points >= 3 && player2Points >= 3) {
+			if (player1Points == player2Points) {
+				return "deuce";
 			}
-			if (player1Points >= 3 && player2Points >= 3 && player1Points == player2Points) {
-					return "deuce";
-				}
-			if (player1Points >= 3 && player1Points - player2Points == 1) {
-					return "player1 has advantage";
+			if (player1Points - player2Points == 1) {
+			return "player1 has advantage";
 			}
-			if (player2Points >= 3 && player2Points - player1Points == 1) {
-					return "player2 has advantage";
+			if (player2Points - player1Points == 1) {
+			return "player2 has advantage";
 			}
+		}
 
-			return  player1Score + " - " + player2Score ;
+		return  getScore(player1Points) + " - " + getScore(player2Points);
 	}
 }

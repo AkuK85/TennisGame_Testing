@@ -481,3 +481,129 @@ and it worked as expected. Test can be seen below.
 	}
 ```
 
+4. __Line 77, 84, 87, 90: Changed conditional boundary__
+
+__Explanation:__ The mutations changed the conditional boundaries in the if statements. After writing a multitude of tests
+to cover all edge cases and possible game states, I was quite confident that the tests would cover all possible scenarios.
+Still the mutants survived, this was quite a surprise to me. After going through the tests and SUT code, I noticed that
+the problem was in the implementation of the getScore method. The method was not returning the scores in the correct order
+and this caused the mutants to survive. The mutants were likely altering the conditional boundaries to check for the 
+incorrect order of the scores. After trying to fix the problem by modifying getScore method, I noticed that the problem
+was how the deuce and advantage states were handled and also how game determined if the game was ended and either of
+players had won the game. I had to modify the getScore method to handle these cases correctly and also modify checkGameEnded
+method to return the winner of the game. After fixing these problems, the mutants were killed and the tests passed. 
+
+Original checkGameEnded method:
+
+```java
+private void checkGameEnded() {
+		if (player1Points >=4 && player1Points - player2Points >= 2)
+			gameEnded = true;
+		else if (player2Points >=4 && player2Points - player1Points >=2)
+			gameEnded = true;
+    }
+```
+
+Refactored checkGameEnded method:
+
+```java
+private String checkGameEnded() {
+		if (player1Points >= 4 && player1Points - player2Points >= 2) {
+			gameEnded = true;
+			return "player1 wins"; // Return win status directly
+		}
+		else if (player2Points >= 4 && player2Points - player1Points >= 2) {
+			gameEnded = true;
+			return "player2 wins"; // Return win status directly
+		}
+		return null; // No winner yet
+	}
+```
+
+As we can see from the refactored code, the checkGameEnded method now returns the winner of the game directly. This makes
+it easier to determine the winner of the game and also makes the getScore method cleaner and easier to understand. The
+getScore method now only needs to check if the game has ended and return the winner of the game. This makes the code more
+robust and less prone to errors.
+
+Original getScore method:
+
+```java
+public String getScore() {
+    String player1Score = getScore(player1Points);
+    String player2Score = getScore(player2Points);
+
+    if (gameEnded) {
+        if (player1Points > player2Points)
+            return "player1 wins";
+        else
+            return "player2 wins";
+    }
+
+    if (player1Points >= 4 && player1Points == player2Points)
+        return "deuce";
+
+    if (player1Points >= 4 && player1Points - player2Points == 1)
+        return "player1 has advantage";
+
+    if (player2Points >= 4 && player2Points - player1Points == 1)
+        return "player2 has advantage";
+
+    return  player1Score + " - " + player2Score ;
+}
+```
+
+Refactored getScore method:
+
+```java
+public String getScore() throws TennisGameException {
+
+		String gameResult = checkGameEnded(); // Call checkGameEnded() and store result
+
+		if (gameResult != null) {
+			return gameResult; // Return win status directly
+		}
+		if (player1Points >= 3 && player2Points >= 3) {
+			if (player1Points == player2Points) {
+				return "deuce";
+			}
+			if (player1Points - player2Points == 1) {
+			return "player1 has advantage";
+			}
+			if (player2Points - player1Points == 1) {
+			return "player2 has advantage";
+			}
+		}
+
+		return  getScore(player1Points) + " - " + getScore(player2Points);
+	}
+```
+
+In here we can see that the refactored getScore method now calls the checkGameEnded method to determine if the game has
+ended and return the winner of the game directly. This makes the code more robust and less prone to errors. The getScore
+method now only needs to check if the game has ended and return the winner of the game. This makes the code more readable
+and easier to understand. Also, the deuce and advantage states are now handled correctly and the method returns the scores
+in the correct order.
+
+Final PITest report after fixing the problems in the SUT code and writing new tests to kill the mutants.
+
+![PITest Report 2](/images/PITestR2.png)
+
+![PITest mutants](/images/PITestR2Mutations.png)
+
+__Conclusion__
+
+After going through the surviving mutants and writing new tests I realised the solution was not as simple as I first
+thought. I had to go through the SUT code and tests multiple times to find the root cause of the problem. The problem was
+in the implementation of the getScore method and how the game states were handled. By refactoring the getScore method and
+checkGameEnded method, I was able to kill the mutants and achieve 100% coverage and 100% mutation coverage. 
+
+
+## ** Final Thoughts **
+
+This project was a great learning experience and I feel more confident in my ability to write tests and refactor code. I
+learned the importance of writing tests that cover all possible scenarios and how to use mutation testing to find gaps in
+the test coverage. I will definitely use these skills in the future to write better tests and improve the quality of my
+code. I also learned the importance of ability to read and understand the code, and how to use that knowledge to write
+better tests and refactor the code. Even with all the frustration and trial and error, I enjoyed working on this project
+and I am proud of the results. I am looking forward to applying these skills in future projects and improving my coding
+skills even further.
